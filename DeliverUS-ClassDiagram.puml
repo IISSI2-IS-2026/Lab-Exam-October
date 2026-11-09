@@ -1,0 +1,100 @@
+@startuml DeliverUS-ClassDiagram
+left to right direction
+hide circle
+skinparam classAttributeIconSize 0
+
+class User {
+  firstName: String
+  lastName: String
+  email: String
+  pasword: String
+  token: String
+  tokenExpiration: Date
+  avatar: String [0..1]
+  address: String
+  postalCode: String
+  phone: String
+}
+
+class Owner
+class Customer
+
+() " " as UserSubtypes
+UserSubtypes --|> User
+Owner -- UserSubtypes
+Customer -- UserSubtypes
+
+note "{complete, disjoint}" as NGeneralization
+NGeneralization .. UserSubtypes
+
+class Order {
+  createdAt: Date
+  startedAt: Date [0..1]
+  sentAt: Date [0..1]
+  deliveredAt: Date [0..1]
+  price: Double
+  address: String
+  shippingCosts: Double
+}
+
+class OrderProduct {
+  quantity: Integer
+  unityPrice: Double
+}
+
+class Product {
+  name: String
+  description: String [0..1]
+  price: Double
+  image: String [0..1]
+  order: Integer [0..1]
+  availability: Boolean
+}
+
+class ProductCategory {
+  name: String
+}
+
+class Restaurant {
+  name: String
+  description: String [0..1]
+  address: String
+  postalCode: String
+  url: String [0..1]
+  shippingCosts: Double
+  /averageServiceMinutes: Double [0..1]
+  email: String [0..1]
+  phone: String [0..1]
+  logo: String [0..1]
+  heroImage: String [0..1]
+  status: enum {online, offline, closed, temporarily closed}
+}
+
+class RestaurantCategory {
+  name: String
+}
+
+Customer  "1" -- "*" Order              : places >
+Order     "*" -- "*" Product            : includes >
+(Order, Product) .. OrderProduct
+
+Owner      "1" -- "*" Restaurant        : manages >
+Restaurant "1" -- "*" Product           : serves >
+Product    "*" -- "1" ProductCategory   : belongsTo >
+Restaurant "*" -- "1" RestaurantCategory: belongsTo >
+Restaurant "1" -- "*" Order             : delivers >
+
+note as NKeys
+  Each entity table will include an incremental id that will
+  act as primary key of type integer.
+  Foreign keys will be named as follows: referencedEntityId.
+  Example: userId would be a FK in Restaurants Table
+end note
+
+note as NAudit
+  Entities stored in database will include the following
+  properties for auditing purposes:
+  createdAt, updatedAt of type Date.
+end note
+
+@enduml

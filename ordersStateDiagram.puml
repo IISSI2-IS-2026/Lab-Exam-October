@@ -1,0 +1,11 @@
+@startuml OrderLifecycle
+hide empty description
+left to right direction
+
+[*] --> Pending
+
+Pending --> Confirmado : owner: confirm()\n(startedAt)
+Confirmado --> Aceptado : rider: accept()\n(riderId)
+Aceptado --> Recogido : rider: pickup()\n(sentAt)
+Recogido --> Entregado : rider: riderDeliver()\n(deliveredAt)
+Entregado --> [*]

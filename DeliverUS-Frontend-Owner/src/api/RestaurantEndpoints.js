@@ -47,9 +47,14 @@ function disqualifyRider(id) {
 // --
 
 // Solution (E4): GET 'restaurants/:restaurantId/orders' endpoint
-// --
+function getOrdersFromRestaurant(id) {
+  return get(`restaurants/${id}/orders`)
+}
 
 // Solution (E4): PATCH 'orders/:orderId/toggleApprove' endpoint
+function toggleApprove(id) {
+  return patch(`orders/${id}/toggleApprove`)
+}
 // --
 
 export {
@@ -61,7 +66,9 @@ export {
   remove,
   getOrderDetail,
   getOrderFromRider, // Already implemented: accepted orders by rider (E4)
-  disqualifyRider // Already implemented: disqualify a rider (E4)
+  disqualifyRider, // Already implemented: disqualify a rider (E4)
   // Solution (E4 y E5): to export the needed endpoints, if any
-  // --
+  getOrdersFromRestaurant,
+  toggleApprove 
+  // --  
 }

@@ -62,8 +62,8 @@ const loadFileRoutes = function (app) {
       hasRole('rider'),
       checkEntityExists(Order, 'orderId'),
       OrderMiddleware.checkOrderCanBeDeliveredByRider,
+      OrderMiddleware.checkDeliveryCode, // Solution
       OrderController.deliver)
-  // 
 
   app.route('/orders/:orderId/riderComments')
     .patch(
@@ -76,6 +76,14 @@ const loadFileRoutes = function (app) {
       OrderController.updateRiderComments)
 
   // Solution (E2): add route to approve or not the order (RF2)
+  app.route('/orders/:orderId/toggleApprove')
+    .patch(
+      isLoggedIn,
+      hasRole('owner'),
+      checkEntityExists(Order, 'orderId'),
+      OrderMiddleware.checkOrderOwnership,
+      OrderMiddleware.checkOrderNotPendingNotAvailable,
+      OrderController.toggleApprove)
   // --
 
   // Already implemented: route to get the accepted orders by a rider (FR3)
@@ -88,6 +96,14 @@ const loadFileRoutes = function (app) {
   // --
 
   // Solution (E2): add route to disqualify a rider (RF6)
+  app.route('/orders/rider/:riderId/disqualify')
+    .patch(
+      isLoggedIn,
+      hasRole('owner'),
+      checkEntityExists(User, 'riderId'),
+      OrderMiddleware.checkApprovedDeliveries,
+      OrderMiddleware.checkRiderIsQualified,
+      OrderController.disqualifyRider)
   // --
 
   app.route('/orders/:orderId')

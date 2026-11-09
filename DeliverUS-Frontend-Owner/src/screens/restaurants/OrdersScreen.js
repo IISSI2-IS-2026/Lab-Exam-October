@@ -9,6 +9,8 @@ import {
 } from 'react-native'
 import {
   // Solution (E4): Import the needed enpoints
+  getOrdersFromRestaurant,
+  toggleApprove
   // --
 } from '../../api/RestaurantEndpoints'
 import ImageCard from '../../components/ImageCard'
@@ -45,12 +47,87 @@ export default function OrdersScreen({ navigation, route }) {
   }, [loggedInUser, route])
 
   // Solution (E4): Call to toggle endpoint
-  const handleToogle = async item => {
+  const handleToggle = async item => {
+    try {
+      await toggleApprove(item.id)
+      fetchOrders()
+      showMessage({
+        message: 'Toggle approve delivery',
+        type: 'success',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    } catch (error) {
+      showMessage({
+        message: `Could not toggle the approve delivery for order #${item.id}. ${error}`,
+        type: 'error',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
   }
   // --
 
   // Solution (E4): Function to decide which toggle button is shown (approve / disappove)
   const decideButton = item => {
+    if (item.ownerApprove)
+      return (
+        <Pressable
+          onPress={() => handleToggle(item)}
+          style={({ pressed }) => [
+            {
+              backgroundColor: pressed
+                ? GlobalStyles.brandPrimaryTap
+                : GlobalStyles.brandPrimary
+            },
+            styles.actionButton
+          ]}
+        >
+          <View
+            style={[
+              { flex: 1, flexDirection: 'row', justifyContent: 'center' }
+            ]}
+          >
+            <MaterialCommunityIcons
+              name="hand-pointing-down"
+              color={'white'}
+              size={20}
+            />
+            <TextRegular textStyle={styles.text}>
+              Disapprove {item.rider ? item.rider.firstName : ''} delivery
+            </TextRegular>
+          </View>
+        </Pressable>
+      )
+    else
+      return (
+        <Pressable
+          onPress={() => handleToggle(item)}
+          style={({ pressed }) => [
+            {
+              backgroundColor: pressed
+                ? GlobalStyles.brandGreenTap
+                : GlobalStyles.brandGreen
+            },
+            styles.actionButton
+          ]}
+        >
+          <View
+            style={[
+              { flex: 1, flexDirection: 'row', justifyContent: 'center' }
+            ]}
+          >
+            <MaterialCommunityIcons
+              name="hand-okay"
+              color={'white'}
+              size={20}
+            />
+            <TextRegular textStyle={styles.text}>
+              Approve {item.rider ? item.rider.firstName : ''} delivery
+            </TextRegular>
+          </View>
+        </Pressable>
+      )
   }
   // --
 
@@ -62,9 +139,9 @@ export default function OrdersScreen({ navigation, route }) {
     else if (item.status === 'sent') logo = sentIcon
     else logo = deliveredIcon
 
-	// Solution: Including rider first name in title
+    // Solution: Including rider first name in title
     const riderName = item.rider ? ' - ' + item.rider.firstName : ' '
-	
+
     return (
       <ImageCard
         imageUri={logo}
@@ -80,20 +157,101 @@ export default function OrdersScreen({ navigation, route }) {
             {getElapsedMinutes(item.createdAt)} min
           </TextRegular>
         </View>
-
         {/* Solution (E4): Views for current info to be displayed in two columns */}
         <View style={styles.columnsContainer}>
-          <View style={styles.columnView}> {/* View for first column */}
+          <View style={styles.columnView}>
+            {' '}
+            {/* View for first column */}
+            <TextSemiBold>
+              <MaterialCommunityIcons
+                name="store"
+                size={14}
+                color={GlobalStyles.brandBlue}
+              />{' '}
+              <TextRegular textStyle={{ color: GlobalStyles.brandBlue }}>
+                {item.restaurant.address}, {item.restaurant.postalCode}
+              </TextRegular>
+            </TextSemiBold>
+            <TextSemiBold>
+              <MaterialCommunityIcons
+                name="map-marker"
+                size={14}
+                color={GlobalStyles.brandBlue}
+              />{' '}
+              <TextRegular textStyle={{ color: GlobalStyles.brandBlue }}>
+                {item.user.firstName} ({item.user.phone}) - {item.address}
+              </TextRegular>
+            </TextSemiBold>
+            <TextSemiBold>
+              <MaterialCommunityIcons
+                name="cash"
+                size={14}
+                color={GlobalStyles.brandBlue}
+              />{' '}
+              <TextRegular textStyle={{ color: GlobalStyles.brandBlue }}>
+                {item.price.toFixed(2)}€
+              </TextRegular>
+            </TextSemiBold>
           </View>
-          <View style={styles.columnView}> {/* View for second column */}
+          <View style={styles.columnView}>
+            {' '}
+            {/* View for second column */}
+            <TextRegular textStyle={{ color: GlobalStyles.brandBlue }}>
+              <MaterialCommunityIcons
+                name="truck-delivery-outline"
+                size={14}
+                color={GlobalStyles.brandBlue}
+              />{' '}
+              Rider comments: {item.riderComments}
+            </TextRegular>
+            <TextRegular textStyle={{ color: GlobalStyles.brandBlue }}>
+              <MaterialCommunityIcons
+                name="human-child"
+                size={14}
+                color={GlobalStyles.brandBlue}
+              />{' '}
+              Customer comments: {item.customerComments}
+            </TextRegular>
+            <TextRegular
+              textStyle={
+                item.ownerApprove
+                  ? { color: GlobalStyles.brandGreen }
+                  : { color: GlobalStyles.brandPrimary }
+              }
+            >
+              <MaterialCommunityIcons
+                name="abacus"
+                size={14}
+                color={
+                  item.ownerApprove
+                    ? { color: GlobalStyles.brandGreen }
+                    : { color: GlobalStyles.brandPrimary }
+                }
+              />{' '}
+              {item.ownerApprove
+                ? 'Delivery approved by owner'
+                : 'Delivery disapproved by owner'}
+            </TextRegular>
           </View>
+          {/* Solution */}
         </View>
+        {/* Solution */}
 
         {/* Solution (E4): View for buttons: Decide buttons and configure the style */}
         <View
-          /*style={ }*/
+          style={
+            /* Solution: to decide buttons to be shown */
+            item.status === 'sent' || item.status === 'delivered'
+              ? [styles.actionButtonsContainer, styles.showActionButton]
+              : [styles.actionButtonsContainer, styles.hideActionButton]
+          }
         >
           {/* Buttons here */}
+          {
+            /* Solution: to decide button */
+            decideButton(item)
+            /* --*/
+          }
 
           {/* Already implemented: Button to accepted orders by a rider (RF-3) */}
           <Pressable
@@ -180,6 +338,17 @@ export default function OrdersScreen({ navigation, route }) {
 
   const fetchOrders = async () => {
     // Solution (E4): Complete the function to get the restaurant orders
+    try {
+      const fetchedOrders = await getOrdersFromRestaurant(route.params.id)
+      setOrders(fetchedOrders)
+    } catch (error) {
+      showMessage({
+        message: `There was an error while retrieving orders. ${error} `,
+        type: 'error',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
     // --
   }
 
@@ -285,8 +454,17 @@ const styles = StyleSheet.create({
   },
   // Solution (E4 / E6): Configure for Two columns style
   columnsContainer: {
+    flexDirection: 'row',
+    position: 'absolute',
+    width: '90%'
   },
   columnView: {
-  },
+    height: 45,
+    paddingTop: 20,
+    marginLeft: 10,
+    alignSelf: 'left',
+    flexDirection: 'column',
+    width: '50%'
+  }
   // --
 })

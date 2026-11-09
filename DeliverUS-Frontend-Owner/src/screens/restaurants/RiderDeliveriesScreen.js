@@ -67,7 +67,6 @@ export default function RiderDeliveriesScreen({ navigation, route }) {
       })
     }
   }
-  // --
 
   const renderOrder = ({ item }) => {
     return (
@@ -236,7 +235,6 @@ export default function RiderDeliveriesScreen({ navigation, route }) {
             </View>
           </Pressable>
         )}
-        {/* -- */}
       </View>
     )
   }

@@ -351,9 +351,29 @@ const analytics = async function (req, res) {
 }
 
 // Solution (E3): 'toggleApprove' controller to approve an order (RF2)
+const toggleApprove = async function (req, res) {
+  try {
+    const order = await Order.findByPk(req.params.orderId)
+    order.ownerApprove = !order.ownerApprove
+    const updatedOrder = await order.save()
+    res.json(updatedOrder)
+  } catch (err) {
+    res.status(500).send(err)
+  }
+}
 // --
 
 // Solution (E3): 'disqualifyRider' controller to disqualify a rider (RF4)
+const disqualifyRider = async function (req, res) {
+  try {
+    const rider = await User.findByPk(req.params.riderId)
+    rider.isQualifiedRider = false
+    const updatedRider = await rider.save()
+    res.json(updatedRider)
+  } catch (err) {
+    res.status(500).send(err)
+  }
+}
 // --
 
 const OrderController = {
@@ -373,6 +393,9 @@ const OrderController = {
   findAvailableOrders,
   indexOrdersFromRider, // Already implemented (RF3: accepted orders by rider
   // Solution (E3): export the functions
+  toggleApprove,
+  disqualifyRider 
   // --
 }
+
 export default OrderController

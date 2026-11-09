@@ -2,8 +2,9 @@ import { useContext, useEffect, useState } from 'react'
 import { StyleSheet, FlatList, View, Pressable } from 'react-native'
 import {
   getMyOrders,
-  confirmPickup
+  confirmPickup,
   // Solution (E5): Import the needed endpoints, if any
+  deliverOrder
 } from '../../api/OrderEndpoints'
 import ImageCard from '../../components/ImageCard'
 import TextSemiBold from '../../components/TextSemiBold'
@@ -15,7 +16,7 @@ import { showMessage } from 'react-native-flash-message'
 import restaurantLogo from '../../../assets/restaurantLogo.jpeg'
 import { API_BASE_URL } from '@env'
 // Solution (E5): Import 'FormModal' from the components folder, if used
-// --
+import FormModal from '../../components/FormModal'
 
 export default function MyOrdersScreen({ navigation, route }) {
   const [orders, setOrders] = useState([])
@@ -25,7 +26,6 @@ export default function MyOrdersScreen({ navigation, route }) {
   // they can be updated if needed
   const [orderToBeDelivered, setOrderToBeDelivered] = useState(null)
   const [deliveryCode, setDeliveryCode] = useState('')
-  // --
 
   useEffect(() => {
     if (loggedInUser) {
@@ -70,10 +70,28 @@ export default function MyOrdersScreen({ navigation, route }) {
   }
 
   // Solution (E5): Function to call the endpoint in order to register the delivery
-  // Remember this endpoint also checks the delivery code in the middleware   
+  // Remember this endpoint also checks the delivery code in the middleware
   const handleDeliver = async (order, deliveryCode) => {
+    setOrderToBeDelivered(null)
+    setDeliveryCode('')
+    try {
+      await deliverOrder(order.id, deliveryCode)
+      showMessage({
+        message: `Order #${order.id} delivered successfully!`,
+        type: 'success',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+      await fetchOrders()
+    } catch (error) {
+      showMessage({
+        message: `Could not deliver order #${order.id}. ${error}`,
+        type: 'error',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
   }
-  // --
 
   const renderActionButton = item => {
     if (!item.sentAt) {
@@ -102,7 +120,28 @@ export default function MyOrdersScreen({ navigation, route }) {
       // Solution (E5): To show the modal on press
       // Code here: if you do not use the Modal, implement what you consider
       return (
-        <Pressable></Pressable>
+        <Pressable
+          onPress={() => setOrderToBeDelivered(item)}
+          style={({ pressed }) => [
+            {
+              backgroundColor: pressed
+                ? GlobalStyles.brandGreenTap
+                : GlobalStyles.brandGreen
+            },
+            styles.actionButton
+          ]}
+        >
+          <View
+            style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}
+          >
+            <MaterialCommunityIcons
+              name="package-variant-closed-check"
+              color={'white'}
+              size={20}
+            />
+            <TextRegular textStyle={styles.text}>Confirm delivery</TextRegular>
+          </View>
+        </Pressable>
       )
     }
     return null
@@ -179,8 +218,16 @@ export default function MyOrdersScreen({ navigation, route }) {
       />
       {/* Solution (E5): Configuring the form modal */}
       <FormModal
+        infoDescriptor={`delivery code for order #${orderToBeDelivered ? orderToBeDelivered.id : 0}`}
+        inputValue={deliveryCode}
+        onChangeInputValue={setDeliveryCode}
+        isVisible={orderToBeDelivered !== null}
+        onCancel={() => {
+          setOrderToBeDelivered(null)
+          setDeliveryCode('')
+        }}
+        onConfirm={() => handleDeliver(orderToBeDelivered, deliveryCode)}
       />
-      {/* -- */}
     </>
   )
 }

@@ -12,9 +12,8 @@ const loadModel = (sequelize, DataTypes) => {
       // define association here
       User.hasMany(models.Restaurant, { foreignKey: 'userId' })
       // Already implemented
+      User.hasMany(models.Order, { foreignKey: 'userId', as: 'customerOrders' })
       User.hasMany(models.Order, { foreignKey: 'riderId', as: 'riderOrders' })
-      User.hasMany(models.Order, { foreignKey: 'userId', as:'customerOrders' })
-      // --
     }
   }
   User.init({
@@ -74,6 +73,10 @@ const loadModel = (sequelize, DataTypes) => {
       ]
     },
     // Solution (E1): add the field
+    isQualifiedRider: {
+      defaultValue: true,
+      type: DataTypes.BOOLEAN
+    },
     // --
     createdAt: {
       allowNull: false,

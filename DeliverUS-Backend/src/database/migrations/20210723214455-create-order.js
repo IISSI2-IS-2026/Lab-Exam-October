@@ -66,6 +66,15 @@ module.exports = {
         type: Sequelize.TEXT
       },
       // Solution (E1): add the fields
+      ownerApprove: {
+        defaultValue: true,
+        type: Sequelize.BOOLEAN
+      },
+      deliveryCode: {
+        allowNull: false,
+        defaultValue: '1234', // This should be removed after updating the order creation
+        type: Sequelize.STRING
+      },
       // --
       createdAt: {
         allowNull: false,

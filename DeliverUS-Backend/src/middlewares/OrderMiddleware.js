@@ -146,13 +146,21 @@ const checkOrderNotPendingNotAvailable = async (req, res, next) => {
 // Solution (E2): need to disqualify a rider (RF4)
 const checkApprovedDeliveries = async (req, res, next) => {
   try {
-    // 'lastWeek' is the date a week before
     const lastWeek = new Date()
     lastWeek.setDate(lastWeek.getDate() - 7)
 
-    // Add the code to implement the remaining middleware
-    // --
+    const numDisapproveDeliveriesLastWeek = await Order.count({
+      where: {
+        riderId: req.params.riderId,
+        ownerApprove: false,
+        deliveredAt: { [Op.gte]: lastWeek }
+      }
+    })
 
+    if (numDisapproveDeliveriesLastWeek > 1) {
+      return next()
+    }
+    return res.status(409).send('Not enough dissapproved deliveries for disqualifying')
   } catch (err) {
     return res.status(500).send(err.message)
   }
@@ -174,7 +182,18 @@ const checkRiderIsQualified = async (req, res, next) => {
 // --
 
 // Solution (E2): 'checkDeliveryCode' middleware for delivery (RF6) 
-// 409 message: 'The delivery code is incorrect'
+const checkDeliveryCode = async (req, res, next) => {
+  try {
+    const order = await Order.findByPk(req.params.orderId)
+
+    if (order.deliveryCode === req.params.deliveryCode) {
+      return next()
+    }
+    return res.status(409).send('The delivery code is incorrect')
+  } catch (err) {
+    return res.status(500).send(err.message)
+  }
+}
 // --
 
 export {
@@ -189,7 +208,9 @@ export {
   checkOrderCanBeDelivered,
   checkRestaurantExists,
   checkOrderNotPendingNotAvailable, // Already implemented (RF2: approve an order)
-  checkRiderIsQualified // Already implemented (RF4: disqualify a rider)
+  checkRiderIsQualified, // Already implemented (RF4: disqualify a rider)
   // Solution (E2): export the functions
+  checkDeliveryCode, 
+  checkApprovedDeliveries 
   // --
 }

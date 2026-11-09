@@ -48,6 +48,15 @@ const loadModel = (sequelize, DataTypes) => {
       type: DataTypes.TEXT
     },
     // Solution (E1): add the fields
+    ownerApprove: {
+      defaultValue: true,
+      type: DataTypes.BOOLEAN
+    },
+    deliveryCode: {
+      allowNull: false,
+      defaultValue: '1234', // This should be removed after updating the order creation
+      type: DataTypes.STRING
+    },
     // --
     status: {
       type: DataTypes.VIRTUAL,

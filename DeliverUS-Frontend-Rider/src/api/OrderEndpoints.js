@@ -25,7 +25,9 @@ function confirmPickup(id) {
 }
 
 // Solution (E5): PATCH '/orders/:orderId/riderDeliver/:deliveryCode' endpoint
-// --
+function deliverOrder(id, deliveryCode) {
+  return patch(`orders/${id}/riderDeliver/${deliveryCode}`)
+}
 
 export {
   getAvailableOrders,
@@ -33,6 +35,7 @@ export {
   getOrderDetail,
   acceptOrder,
   updateRiderComments,
-  confirmPickup
+  confirmPickup,
   // Solution (E5): Export the needed endpoints, if any
+  deliverOrder
 }

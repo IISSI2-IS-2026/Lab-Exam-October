@@ -58,6 +58,10 @@ module.exports = {
         defaultValue: 'customer'
       },
       // Solution (E1): add the field
+      isQualifiedRider: {
+        defaultValue: true,
+        type: Sequelize.BOOLEAN
+      },
       // --
       createdAt: {
         allowNull: false,
